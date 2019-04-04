@@ -68,7 +68,7 @@ int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoint
 
     for(size_t iMP=0; iMP<vpMapPoints.size(); iMP++)
     {
-        MapPoint* pMP = vpMapPoints[iMP];//这里是不是将几帧图像三角化得到的地图点按照相应的时间戳标记 ?????????
+        MapPoint* pMP = vpMapPoints[iMP];///这里是不是将几帧图像三角化得到的地图点按照相应的时间戳标记 ?????????
 
         // 判断该点是否要投影
         if(!pMP->mbTrackInView)
@@ -82,8 +82,8 @@ int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoint
 
         // The size of the window will depend on the viewing direction
         // 搜索窗口的大小取决于视角, 若当前视角和平均视角夹角接近0度时, r取一个较小的值
-        float r = RadiusByViewingCos(pMP->mTrackViewCos);
-        
+        float r = RadiusByViewingCos(pMP->mTrackViewCos);///这个平均视角是怎么获得的，是谁的平均
+                                                         ///这是每个mappoint在相机坐系下的方向向量平均
         // 如果需要进行更粗糙的搜索，则增大范围
         if(bFactor)
             r*=th;
@@ -113,7 +113,7 @@ int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoint
                 if(F.mvpMapPoints[idx]->Observations()>0)
                     continue;
 
-            if(F.mvuRight[idx]>0)
+            if(F.mvuRight[idx]>0)///双目中使用
             {
                 const float er = fabs(pMP->mTrackProjXR-F.mvuRight[idx]);
                 if(er>r*F.mvScaleFactors[nPredictedLevel])
@@ -156,13 +156,13 @@ int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoint
 
 float ORBmatcher::RadiusByViewingCos(const float &viewCos)
 {
-    if(viewCos>0.998)
+    if(viewCos>0.998)///经验值吧？
         return 2.5;
     else
         return 4.0;
 }
 
-
+///作用是什么？
 bool ORBmatcher::CheckDistEpipolarLine(const cv::KeyPoint &kp1,const cv::KeyPoint &kp2,const cv::Mat &F12,const KeyFrame* pKF2)
 {
     // Epipolar line in second image l = x1'F12 = [a b c]
@@ -206,9 +206,9 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPoin
 {
     const vector<MapPoint*> vpMapPointsKF = pKF->GetMapPointMatches();
 
-    vpMapPointMatches = vector<MapPoint*>(F.N,static_cast<MapPoint*>(NULL));
+    vpMapPointMatches = vector<MapPoint*>(F.N,static_cast<MapPoint*>(NULL));///这个F应该是keyframe吧，frame中没有N这个成员变量
 
-    const DBoW2::FeatureVector &vFeatVecKF = pKF->mFeatVec;
+    const DBoW2::FeatureVector &vFeatVecKF = pKF->mFeatVec;///什么鬼
 
     int nmatches=0;
 

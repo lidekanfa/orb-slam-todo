@@ -59,8 +59,8 @@ public:
     int GetIndexInKeyFrame(KeyFrame* pKF);
     bool IsInKeyFrame(KeyFrame* pKF);
 
-    void SetBadFlag();
-    bool isBad();
+    void SetBadFlag();// 在可以观测到该MapPoint的keyframe中删除此地图点
+    bool isBad();///如果共视帧较少则bad  但是新插入的地图点怎么办
 
     void Replace(MapPoint* pMP);
     MapPoint* GetReplaced();
@@ -76,7 +76,7 @@ public:
 
     cv::Mat GetDescriptor();
 
-    void UpdateNormalAndDepth();
+    void UpdateNormalAndDepth();//更新平均方向和观测距离范围  但是这个距离范围是干什么用的？
 
     float GetMinDistanceInvariance();
     float GetMaxDistanceInvariance();

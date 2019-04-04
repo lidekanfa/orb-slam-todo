@@ -84,7 +84,7 @@ void KeyFrame::SetPose(const cv::Mat &Tcw_)
 
     Twc = cv::Mat::eye(4,4,Tcw.type());
     Rwc.copyTo(Twc.rowRange(0,3).colRange(0,3));
-    Ow.copyTo(Twc.rowRange(0,3).col(3));
+    Ow.copyTo(Twc.rowRange(0,3).col(3));///相机坐标系到世界坐标系下的平移
     // center为相机坐标系（左目）下，立体相机中心的坐标
     // 立体相机中心点坐标与左目相机坐标之间只是在x轴上相差mHalfBaseline,
     // 因此可以看出，立体相机中两个摄像头的连线为x轴，正方向为左目相机指向右目相机
@@ -140,8 +140,9 @@ cv::Mat KeyFrame::GetTranslation()
 void KeyFrame::AddConnection(KeyFrame *pKF, const int &weight)
 {
     {
-        unique_lock<mutex> lock(mMutexConnections);
+        unique_lock<mutex> lock(mMutexConnections);///后面这些判断没有用吧，直接进行赋值就好了
         // std::map::count函数只可能返回0或1两种情况
+        ///count 返回指定元素出现的次数，但是在map里面每个元素只能出现1次，所以返回值只可能是1或者0
         if(!mConnectedKeyFrameWeights.count(pKF)) // count函数返回0，mConnectedKeyFrameWeights中没有pKF，之前没有连接
             mConnectedKeyFrameWeights[pKF]=weight;
         else if(mConnectedKeyFrameWeights[pKF]!=weight) // 之前连接的权重不一样
@@ -168,7 +169,7 @@ void KeyFrame::UpdateBestCovisibles()
     for(map<KeyFrame*,int>::iterator mit=mConnectedKeyFrameWeights.begin(), mend=mConnectedKeyFrameWeights.end(); mit!=mend; mit++)
        vPairs.push_back(make_pair(mit->second,mit->first));
 
-    // 按照权重进行排序
+    // 按照权重进行排序 权重从小到大排序
     sort(vPairs.begin(),vPairs.end());
     list<KeyFrame*> lKFs; // keyframe
     list<int> lWs; // weight
@@ -184,8 +185,8 @@ void KeyFrame::UpdateBestCovisibles()
 }
 
 /**
- * @brief 得到与该关键帧连接的关键帧
- * @return 连接的关键帧
+ * @brief 得到与该关键帧有共视关系的关键帧
+ * @return 有共视关系的关键帧
  */
 set<KeyFrame*> KeyFrame::GetConnectedKeyFrames()
 {
@@ -197,8 +198,8 @@ set<KeyFrame*> KeyFrame::GetConnectedKeyFrames()
 }
 
 /**
- * @brief 得到与该关键帧连接的关键帧(已按权值排序)
- * @return 连接的关键帧
+ * @brief 得到与该关键帧有共视关系的关键帧(已按权值排序)
+ * @return 有共视关系的关键帧
  */
 vector<KeyFrame*> KeyFrame::GetVectorCovisibleKeyFrames()
 {
@@ -207,11 +208,11 @@ vector<KeyFrame*> KeyFrame::GetVectorCovisibleKeyFrames()
 }
 
 /**
- * @brief 得到与该关键帧连接的前N个关键帧(已按权值排序)
+ * @brief 得到与该关键帧有共视关系的前N个关键帧(已按权值排序)
  * 
- * 如果连接的关键帧少于N，则返回所有连接的关键帧
+ * 如果有共视关系的关键帧少于N，则返回所有有共视关系的关键帧
  * @param N 前N个
- * @return 连接的关键帧
+ * @return 有共视关系的关键帧
  */
 vector<KeyFrame*> KeyFrame::GetBestCovisibilityKeyFrames(const int &N)
 {
@@ -237,6 +238,11 @@ vector<KeyFrame*> KeyFrame::GetCovisiblesByWeight(const int &w)
     // http://www.cplusplus.com/reference/algorithm/upper_bound/
     // 从mvOrderedWeights找出第一个大于w的那个迭代器
     // 这里应该使用lower_bound，因为lower_bound是返回小于等于，而upper_bound只能返回第一个大于的
+    ///如果输入的序列是从大到小的那么，后面的比较函数必须是>或者>=
+    ///如果输入的序列是从小到大的那么，后面的比较函数必须是<或者<=
+    ///lower函数的功能和比较函数的符号相反，如果比较函数的符号是>=，那么lower函数输出的是第一个<给定值的指针
+    ///upper函数的功能和比较函数的符号相反但是包括等号，如果比较函数的符号是<=，那么lower函数输出的是第一个>=给定值的指针
+    ///这里因为比较函数是>，所以upper函数输出的是第一个小于给定值的指针
     vector<int>::iterator it = upper_bound(mvOrderedWeights.begin(),mvOrderedWeights.end(),w,KeyFrame::weightComp);
     if(it==mvOrderedWeights.end() && *mvOrderedWeights.rbegin()<w)
         return vector<KeyFrame*>();
@@ -252,7 +258,7 @@ vector<KeyFrame*> KeyFrame::GetCovisiblesByWeight(const int &w)
  * @param  pKF 关键帧
  * @return     权重
  */
-int KeyFrame::GetWeight(KeyFrame *pKF)
+int KeyFrame::GetWeight(KeyFrame *pKF)///这里可以不使用判断语句，直接输出就行，如果pkf与当前关键帧不存在共视关系，那么值默认为0
 {
     unique_lock<mutex> lock(mMutexConnections);
     if(mConnectedKeyFrameWeights.count(pKF))
@@ -272,13 +278,13 @@ void KeyFrame::AddMapPoint(MapPoint *pMP, const size_t &idx)
     mvpMapPoints[idx]=pMP;
 }
 
-void KeyFrame::EraseMapPointMatch(const size_t &idx)
+void KeyFrame::EraseMapPointMatch(const size_t &idx)//將此关键帧中对应的关键点的内存清除
 {
     unique_lock<mutex> lock(mMutexFeatures);
     mvpMapPoints[idx]=static_cast<MapPoint*>(NULL);
 }
 
-void KeyFrame::EraseMapPointMatch(MapPoint* pMP)
+void KeyFrame::EraseMapPointMatch(MapPoint* pMP)///如果这种操作经常发生，是不是可以使用set来释放部分内存
 {
     int idx = pMP->GetIndexInKeyFrame(this);
     if(idx>=0)
@@ -297,7 +303,7 @@ set<MapPoint*> KeyFrame::GetMapPoints()
     set<MapPoint*> s;
     for(size_t i=0, iend=mvpMapPoints.size(); i<iend; i++)
     {
-        if(!mvpMapPoints[i])
+        if(!mvpMapPoints[i])///可能有些地图点被去除了，所以有这个判断
             continue;
         MapPoint* pMP = mvpMapPoints[i];
         if(!pMP->isBad())
@@ -466,6 +472,7 @@ void KeyFrame::UpdateConnections()
 
         // mspConnectedKeyFrames = spConnectedKeyFrames;
         // 更新图的连接(权重)
+        ///不是要更新图吗，KFcounter没变更新啥
         mConnectedKeyFrameWeights = KFcounter;//更新该KeyFrame的mConnectedKeyFrameWeights，更新当前帧与其它关键帧的连接权重
         mvpOrderedConnectedKeyFrames = vector<KeyFrame*>(lKFs.begin(),lKFs.end());
         mvOrderedWeights = vector<int>(lWs.begin(), lWs.end());
@@ -568,7 +575,7 @@ void KeyFrame::SetBadFlag()
             return;
         }
     }
-
+    ///mConnectedKeyFrameWeights不就是当前帧与共视帧之间的联系，如果要删除连接，直接把它删除不行？
     for(map<KeyFrame*,int>::iterator mit = mConnectedKeyFrameWeights.begin(), mend=mConnectedKeyFrameWeights.end(); mit!=mend; mit++)
         mit->first->EraseConnection(this);// 让其它的KeyFrame删除与自己的联系
 

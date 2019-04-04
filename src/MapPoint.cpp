@@ -68,18 +68,20 @@ MapPoint::MapPoint(const cv::Mat &Pos, Map* pMap, Frame* pFrame, const int &idxF
     mnFound(1), mbBad(false), mpReplaced(NULL), mpMap(pMap)
 {
     Pos.copyTo(mWorldPos);
-    cv::Mat Ow = pFrame->GetCameraCenter();
+    cv::Mat Ow = pFrame->GetCameraCenter();//世界坐标系下相机中心的位置
+    ///这不就是相机坐标系下三维点的位置
     mNormalVector = mWorldPos - Ow;// 世界坐标系下相机到3D点的向量
     mNormalVector = mNormalVector/cv::norm(mNormalVector);// 世界坐标系下相机到3D点的单位向量
 
-    cv::Mat PC = Pos - Ow;
+    cv::Mat PC = Pos - Ow;///这一点和前面那几句是一样的吧
     const float dist = cv::norm(PC);
+
     const int level = pFrame->mvKeysUn[idxF].octave;
     const float levelScaleFactor =  pFrame->mvScaleFactors[level];
     const int nLevels = pFrame->mnScaleLevels;
 
     // 另见PredictScale函数前的注释
-    mfMaxDistance = dist*levelScaleFactor;
+    mfMaxDistance = dist*levelScaleFactor;///理解存在问题（yyl）
     mfMinDistance = mfMaxDistance/pFrame->mvScaleFactors[nLevels-1];
 
     // 见mDescriptor在MapPoint.h中的注释
@@ -100,7 +102,7 @@ void MapPoint::SetWorldPos(const cv::Mat &Pos)
 cv::Mat MapPoint::GetWorldPos()
 {
     unique_lock<mutex> lock(mMutexPos);
-    return mWorldPos.clone();
+    return mWorldPos.clone();///要谨慎使用clone 它和原来的mat指向同一片地址，修改一个两个都变
 }
 
 cv::Mat MapPoint::GetNormal()
@@ -187,7 +189,7 @@ void MapPoint::SetBadFlag()
     {
         unique_lock<mutex> lock1(mMutexFeatures);
         unique_lock<mutex> lock2(mMutexPos);
-        mbBad=true;
+        mbBad=true;///opencv中的浅拷贝有引用计数功能，当所有引用对象都析构时，它所指的内存才会释放
         obs = mObservations;// 把mObservations转存到obs，obs和mObservations里存的是指针，赋值过程为浅拷贝
         mObservations.clear();// 把mObservations指向的内存释放，obs作为局部变量之后自动删除
     }
@@ -238,13 +240,13 @@ void MapPoint::Replace(MapPoint* pMP)
             pMP->AddObservation(pKF,mit->second);// 让MapPoint替换掉对应的KeyFrame
         }
         else
-        {
+        {   ///这里也没有体现pmp的观测比this多
             // 产生冲突，即pKF中有两个特征点a,b（这两个特征点的描述子是近似相同的），这两个特征点对应两个MapPoint为this,pMP
             // 然而在fuse的过程中pMP的观测更多，需要替换this，因此保留b与pMP的联系，去掉a与this的联系
             pKF->EraseMapPointMatch(mit->second);
         }
     }
-    pMP->IncreaseFound(nfound);
+    pMP->IncreaseFound(nfound);///这个如果是+1的话有什么意义你呢
     pMP->IncreaseVisible(nvisible);
     pMP->ComputeDistinctiveDescriptors();
 
@@ -266,7 +268,7 @@ bool MapPoint::isBad()
  * 1. 该MapPoint在某些帧的视野范围内，通过Frame::isInFrustum()函数判断
  * 2. 该MapPoint被这些帧观测到，但并不一定能和这些帧的特征点匹配上
  *    例如：有一个MapPoint（记为M），在某一帧F的视野范围内，
- *    但并不表明该点M可以和F这一帧的某个特征点能匹配上
+ *    但并不表明该点M可以和F这一帧的某个特征点能匹配上（？yyl）
  */
 void MapPoint::IncreaseVisible(int n)
 {
@@ -286,7 +288,7 @@ void MapPoint::IncreaseFound(int n)
     mnFound+=n;
 }
 
-float MapPoint::GetFoundRatio()
+float MapPoint::GetFoundRatio()///这些参数是干啥的？
 {
     unique_lock<mutex> lock(mMutexFeatures);
     return static_cast<float>(mnFound)/mnVisible;
@@ -448,7 +450,7 @@ void MapPoint::UpdateNormalAndDepth()
     const int nLevels = pRefKF->mnScaleLevels; // 金字塔层数
 
     {
-        unique_lock<mutex> lock3(mMutexPos);
+        unique_lock<mutex> lock3(mMutexPos);///观测距离范围？
         // 另见PredictScale函数前的注释
         mfMaxDistance = dist*levelScaleFactor;                           // 观测到该点的距离下限
         mfMinDistance = mfMaxDistance/pRefKF->mvScaleFactors[nLevels-1]; // 观测到该点的距离上限
@@ -456,7 +458,7 @@ void MapPoint::UpdateNormalAndDepth()
     }
 }
 
-float MapPoint::GetMinDistanceInvariance()
+float MapPoint::GetMinDistanceInvariance()///什么作用
 {
     unique_lock<mutex> lock(mMutexPos);
     return 0.8f*mfMinDistance;
@@ -478,7 +480,7 @@ float MapPoint::GetMaxDistanceInvariance()
 //           log(dmax/d)
 // m = ceil(------------)
 //            log(1.2)
-int MapPoint::PredictScale(const float &currentDist, KeyFrame* pKF)
+int MapPoint::PredictScale(const float &currentDist, KeyFrame* pKF)///为什么可以这样计算
 {
     float ratio;
     {

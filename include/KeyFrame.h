@@ -60,7 +60,7 @@ public:
     cv::Mat GetTranslation();
 
     // Bag of Words Representation
-    void ComputeBoW();
+    void ComputeBoW();///todo
 
     // Covisibility graph functions
     void AddConnection(KeyFrame* pKF, const int &weight);

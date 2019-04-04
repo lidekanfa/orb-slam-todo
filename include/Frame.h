@@ -123,7 +123,7 @@ public:
     static float cy;
     static float invfx;
     static float invfy;
-    cv::Mat mDistCoef;
+    cv::Mat mDistCoef;///是不是矫正参数？
 
     // Stereo baseline multiplied by fx.
     float mbf;
@@ -176,10 +176,10 @@ public:
     static float mfGridElementWidthInv;
     static float mfGridElementHeightInv;
     // 每个格子分配的特征点数，将图像分成格子，保证提取的特征点比较均匀
-    ///不对吧，应该是一幅图像划分的格子数
+    ///不对，应该是一幅图像划分的格子数
     // FRAME_GRID_ROWS 48
     // FRAME_GRID_COLS 64
-    std::vector<std::size_t> mGrid[FRAME_GRID_COLS][FRAME_GRID_ROWS];///这一点不对吧，要是定义每个格子的大小应该用小括号里面加一个数就行，这样定义的是一个ｖｅｃｔｏｒ类型的数组
+    std::vector<std::size_t> mGrid[FRAME_GRID_COLS][FRAME_GRID_ROWS];///定义大小为FRAME_GRID_ROWS*FRAME_GRID_COLS的向量数组，这样每个格子就是一个向量
     ///是对所有层的图像都划分相同数量的格子吗，这样不合理吧，当图像像素较少时划分那样的格子没有意义，但是如果按照尺度因子按比例划分的话，后面编程可能比较麻烦
     // Camera pose.
     cv::Mat mTcw; ///< 相机姿态 世界坐标系到相机坐标坐标系的变换矩阵

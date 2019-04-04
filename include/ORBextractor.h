@@ -113,7 +113,7 @@ protected:
 
     std::vector<float> mvScaleFactor;
     std::vector<float> mvInvScaleFactor;
-    //都没有用到
+    ///都没有用到,在后面matching里面有用到
     std::vector<float> mvLevelSigma2;
     std::vector<float> mvInvLevelSigma2;
 };

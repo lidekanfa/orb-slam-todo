@@ -135,7 +135,7 @@ static void computeOrbDescriptor(const KeyPoint& kpt,
     float angle = (float)kpt.angle*factorPI;              //转换成弧度
     float a = (float)cos(angle), b = (float)sin(angle);
 
-    const uchar* center = &img.at<uchar>(cvRound(kpt.pt.y), cvRound(kpt.pt.x)); //得到图像中关键点值的地址
+    const uchar* center = &img.at<uchar>(cvRound(kpt.pt.y), cvRound(kpt.pt.x)); //得到图像中关键点值的坐标
     const int step = (int)img.step;
 
     #define GET_VALUE(idx) \
@@ -1153,7 +1153,7 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
         Mat workingMat = mvImagePyramid[level].clone();
         GaussianBlur(workingMat, workingMat, Size(7, 7), 2, 2, BORDER_REFLECT_101);
 
-        // Compute the descriptors 计算描述子
+        // Compute the descriptors 计算描述子 每一行一个描述子
         Mat desc = descriptors.rowRange(offset, offset + nkeypointsLevel);
         computeDescriptors(workingMat, keypoints, desc, pattern);
 

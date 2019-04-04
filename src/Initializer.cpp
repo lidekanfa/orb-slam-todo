@@ -61,7 +61,7 @@ bool Initializer::Initialize(const Frame &CurrentFrame, const vector<int> &vMatc
     mvKeys2 = CurrentFrame.mvKeysUn;
 
     // mvMatches12记录匹配上的特征点对
-    mvMatches12.clear();
+    mvMatches12.clear();///里面是匹配上的特征点的索引
     mvMatches12.reserve(mvKeys2.size());
     // mvbMatched1记录每个特征点是否有匹配的特征点，
     // 这个变量后面没有用到，后面只关心匹配上的特征点
@@ -114,7 +114,7 @@ bool Initializer::Initialize(const Frame &CurrentFrame, const vector<int> &vMatc
             int idx = vAvailableIndices[randi];
 
             mvSets[it][j] = idx;
-
+            ///不使用重复的元素  pop_back是删除最后一个元素，但是这样的删除还是可以读取，只是size大小改变，所以上面使用的。size（）是nice的
             // randi对应的索引已经被选过了，从容器中删除
             // randi对应的索引用最后一个元素替换，并删掉最后一个元素
             vAvailableIndices[randi] = vAvailableIndices.back();
@@ -932,12 +932,17 @@ bool Initializer::ReconstructH(vector<bool> &vbMatchesInliers, cv::Mat &H21, cv:
  * @param x3D 三维点
  * @see       Multiple View Geometry in Computer Vision - 12.2 Linear triangulation methods p312
  */
+///这里三维点的位置是世界坐标系下的位置
 void Initializer::Triangulate(const cv::KeyPoint &kp1, const cv::KeyPoint &kp2, const cv::Mat &P1, const cv::Mat &P2, cv::Mat &x3D)
 {
     // 在DecomposeE函数和ReconstructH函数中对t有归一化
     // 这里三角化过程中恢复的3D点深度取决于 t 的尺度，
     // 但是这里恢复的3D点并没有决定单目整个SLAM过程的尺度
     // 因为CreateInitialMapMonocular函数对3D点深度会缩放，然后反过来对 t 有改变
+    ///对深度进行缩放是什么原因，可能是在金字塔的不同层上进行了匹配
+    ///这里使用关键点的坐标来进行三角化，因此在后面要计算深度的时候还应该和尺度因子有联系
+    ///这里使用3*4的摄像机矩阵来计算
+    ///这里方程是超定的，因此要计算最小特征值对应的特征向量
 
     cv::Mat A(4,4,CV_32F);
 

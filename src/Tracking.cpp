@@ -78,6 +78,12 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
 
     // 图像矫正系数
     // [k1 k2 p1 p2 k3]
+    //           径向畸变 k1 k2
+    // x_dis = x(1+k1*r^2+k2*r^4+k3*r^6)
+    // y_dis = y(1+k1*r^2+k2*r^4+k3*r^6)
+    //           切向畸变
+    // x_dis = x+2*p1*x*y+p2(r^2 + 2*x^2)
+    // y_dis = y+2*p2*x*y+p1(r^2 + 2*y^2)
     cv::Mat DistCoef(4,1,CV_32F);
     DistCoef.at<float>(0) = fSettings["Camera.k1"];
     DistCoef.at<float>(1) = fSettings["Camera.k2"];
@@ -375,6 +381,8 @@ void Tracking::Track()
                 // mCurrentFrame.mnId<mnLastRelocFrameId+2这个判断不应该有
                 // 应该只要mVelocity不为空，就优先选择TrackWithMotionModel
                 // mnLastRelocFrameId上一次重定位的那一帧
+                ///刚刚完成重定位的时候位姿变换是不能拿来给当前关键帧计算位姿作参考的
+                ///是不是俺
                 if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
                 {
                     // 将上一帧的位姿作为当前帧的初始位姿
@@ -736,7 +744,7 @@ void Tracking::MonocularInitialization()
             for(size_t i=0; i<mCurrentFrame.mvKeysUn.size(); i++)
                 mvbPrevMatched[i]=mCurrentFrame.mvKeysUn[i].pt;
 
-            if(mpInitializer)
+            if(mpInitializer)///这一点不存在，和前面的条件冲突
                 delete mpInitializer;
 
             // 由当前帧构造初始器 sigma:1.0 iterations:200
@@ -753,11 +761,12 @@ void Tracking::MonocularInitialization()
         // 步骤2：如果当前帧特征点数大于100，则得到用于单目初始化的第二帧
         // 如果当前帧特征点太少，重新构造初始器
         // 因此只有连续两帧的特征点个数都大于100时，才能继续进行初始化过程
+        ///这一点的比例不太对，找到特征点的阈值设为100 匹配的阈值也设为100 这是不是有点过分，应该错开一个区间
         if((int)mCurrentFrame.mvKeys.size()<=100)
         {
             delete mpInitializer;
             mpInitializer = static_cast<Initializer*>(NULL);
-            fill(mvIniMatches.begin(),mvIniMatches.end(),-1);
+            fill(mvIniMatches.begin(),mvIniMatches.end(),-1);///人家本来就是-1
             return;
         }
 
@@ -838,7 +847,7 @@ void Tracking::CreateInitialMapMonocular()
     // 步骤4：将3D点包装成MapPoints
     for(size_t i=0; i<mvIniMatches.size();i++)
     {
-        if(mvIniMatches[i]<0)
+        if(mvIniMatches[i]<0)//mvIniMatches里面存储了与前一帧特征点对应的匹配索引，如果没匹配上，结果是-1,匹配上了，结果是当前帧关键点的索引
             continue;
 
         //Create MapPoint.
@@ -853,7 +862,7 @@ void Tracking::CreateInitialMapMonocular()
         // c.该MapPoint的平均观测方向和深度范围
 
         // 步骤4.3：表示该KeyFrame的哪个特征点可以观测到哪个3D点
-        pKFini->AddMapPoint(pMP,i);
+        pKFini->AddMapPoint(pMP,i);///AddMapPoint函数里面的参数只有一个，为什么这里有两个
         pKFcur->AddMapPoint(pMP,mvIniMatches[i]);
 
         // a.表示该MapPoint可以被哪个KeyFrame的哪个特征点观测到
@@ -861,7 +870,8 @@ void Tracking::CreateInitialMapMonocular()
         pMP->AddObservation(pKFcur,mvIniMatches[i]);
 
         // b.从众多观测到该MapPoint的特征点中挑选区分读最高的描述子
-        pMP->ComputeDistinctiveDescriptors();
+        pMP->ComputeDistinctiveDescriptors()///使用p3p来估计相机位姿，是不是应该默认这些观测服从高斯分布，计算出均值和方差
+        ///这一点应该可以改进，主要是如何计算二进制描述子的均值和方差
         // c.更新该MapPoint平均观测方向以及观测距离的范围
         pMP->UpdateNormalAndDepth();
 
@@ -901,12 +911,15 @@ void Tracking::CreateInitialMapMonocular()
 
     // Scale initial baseline
     cv::Mat Tc2w = pKFcur->GetPose();
-    // x/z y/z 将z归一化到1 
+    // x/z y/z 将z归一化到1
+    ////没看懂，这怎么是将z归一化到1了？最多是将平移t进行一定比例的缩放
     Tc2w.col(3).rowRange(0,3) = Tc2w.col(3).rowRange(0,3)*invMedianDepth;
     pKFcur->SetPose(Tc2w);
 
     // Scale points
     // 把3D点的尺度也归一化到1
+    ///现在就不是归一化到1了，是以同一个比例进行变换，因为invMedianDepth是所有地图点的中位数，是一个固定的值
+    ///再说了，归一化有用吗？求解变换矩阵T的时候，最多也是只能确定到相差一个尺度因子，这个尺度因子也就是三维点在相机坐标系下的深度，因此也是不确定的，所以，每次都引入了不确定的尺度，那么，第一次所谓的归一化尺度有什么作用？
     vector<MapPoint* > vpAllMapPoints = pKFini->GetMapPointMatches();
     for(size_t iMP=0; iMP<vpAllMapPoints.size(); iMP++)
     {
@@ -925,7 +938,7 @@ void Tracking::CreateInitialMapMonocular()
     mnLastKeyFrameId=mCurrentFrame.mnId;
     mpLastKeyFrame = pKFcur;
 
-    mvpLocalKeyFrames.push_back(pKFcur);
+    mvpLocalKeyFrames.push_back(pKFcur);///这一点的顺序有没有问题？
     mvpLocalKeyFrames.push_back(pKFini);
     mvpLocalMapPoints=mpMap->GetAllMapPoints();
     mpReferenceKF = pKFcur;
@@ -984,7 +997,7 @@ bool Tracking::TrackReferenceKeyFrame()
     // If enough matches are found we setup a PnP solver
     //0.7表示特征匹配时用最近邻和次近邻之比来改善匹配效果 true表示是否检查相机朝向
     ORBmatcher matcher(0.7,true);
-    vector<MapPoint* > vpMapPointMatches;
+    vector<MapPoint*> vpMapPointMatches;
 
     // 步骤2：通过特征点的BoW加快当前帧与参考帧之间的特征点匹配
     // 特征点的匹配关系由MapPoints进行维护 返回值匹配点的个数
@@ -1007,7 +1020,7 @@ bool Tracking::TrackReferenceKeyFrame()
     {
         if(mCurrentFrame.mvpMapPoints[i])
         {
-            /////////////////////////////////////这一段是怎么回事？
+            /////////////////////////////////////这一段是怎么回事？去除经过前面优化过后的外点
             if(mCurrentFrame.mvbOutlier[i])
             {
                 MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];

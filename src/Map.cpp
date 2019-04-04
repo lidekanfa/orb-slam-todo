@@ -61,6 +61,7 @@ void Map::EraseMapPoint(MapPoint *pMP)
     mspMapPoints.erase(pMP);
 
     // TODO: This only erase the pointer.
+    ///这一步只是删除了指针，并没有删除它所指向的内存
     // Delete the MapPoint
 }
 
@@ -74,6 +75,7 @@ void Map::EraseKeyFrame(KeyFrame *pKF)
     mspKeyFrames.erase(pKF);
 
     // TODO: This only erase the pointer.
+    ///这一步只是删除了指针，并没有删除它所指向的内存 应该将它指向的内存也删除
     // Delete the MapPoint
 }
 

@@ -348,7 +348,7 @@ bool Frame::isInFrustum(MapPoint *pMP, float viewingCosLimit)
 
     // Check viewing angle
     // V-D 2) 计算当前视角和平均视角夹角的余弦值, 若小于cos(60), 即夹角大于60度则返回
-    cv::Mat Pn = pMP->GetNormal();///这就取得平均视角夹角了？
+    cv::Mat Pn = pMP->GetNormal();
 
     const float viewCos = PO.dot(Pn)/dist;//归一化
 
