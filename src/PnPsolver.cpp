@@ -199,7 +199,15 @@ cv::Mat PnPsolver::find(vector<bool> &vbInliers, int &nInliers)
     bool bFlag;
     return iterate(mRansacMaxIts,bFlag,vbInliers,nInliers);    
 }
-
+/**
+ * 使用RANSAC来计算位姿，如果第一次计算的内点数大于最小的内点数，那么在此次计算的基础上再计算一次，如果第二次计算的内点数还是大于最小的内点数，那么直接返回计算的位姿。
+ *
+ * @param nIterations  迭代次数
+ * @param bNoMore 判断
+ * @param vbInliers  判断对应索引的特征点是否为内点
+ * @param nInliers  内点个数
+ * @return 感觉这一块有些混乱，是不是应该就迭代给定次数，如果在给定次数内内点数大于最小给定内点数，则进行提纯，如果提纯后还是大于最小内点数，那么返回提纯计算的位姿，否则返回第一次计算的位姿
+ */
 cv::Mat PnPsolver::iterate(int nIterations, bool &bNoMore, vector<bool> &vbInliers, int &nInliers)
 {
     bNoMore = false;
@@ -221,6 +229,7 @@ cv::Mat PnPsolver::iterate(int nIterations, bool &bNoMore, vector<bool> &vbInlie
     vector<size_t> vAvailableIndices;
 
     int nCurrentIterations = 0;
+    ///这里为什么要加迭代次数和最大迭代次数的限制，直接迭代要求的次数不就行了
     while(mnIterations<mRansacMaxIts || nCurrentIterations<nIterations)
     {
         nCurrentIterations++;
@@ -244,6 +253,7 @@ cv::Mat PnPsolver::iterate(int nIterations, bool &bNoMore, vector<bool> &vbInlie
         }
 
         // Compute camera pose
+        ///这里没有东西承接返回值对吗？可以不接收返回值，这个值在需要的时候加以使用就行
         compute_pose(mRi, mti);
 
         // Check inliers
@@ -265,8 +275,8 @@ cv::Mat PnPsolver::iterate(int nIterations, bool &bNoMore, vector<bool> &vbInlie
                 Rcw.copyTo(mBestTcw.rowRange(0,3).colRange(0,3));
                 tcw.copyTo(mBestTcw.rowRange(0,3).col(3));
             }
-
-            if(Refine())
+            ///是不是有必要再进行一次提纯，毕竟在它只是提供一个初值，后面还有优化？
+            if(Refine())///在前一步计算出内点的点集中再进行RANSAC计算,如果这次计算的内点数量大于最小值，则返回计算位姿
             {
                 nInliers = mnRefinedInliers;
                 vbInliers = vector<bool>(mvpMapPointMatches.size(),false);
@@ -281,7 +291,7 @@ cv::Mat PnPsolver::iterate(int nIterations, bool &bNoMore, vector<bool> &vbInlie
         }
     }
 
-    if(mnIterations>=mRansacMaxIts)
+    if(mnIterations>=mRansacMaxIts)///这一点存在疑问
     {
         bNoMore=true;
         if(mnBestInliers>=mRansacMinInliers)
@@ -307,7 +317,7 @@ bool PnPsolver::Refine()
 
     for(size_t i=0; i<mvbBestInliers.size(); i++)
     {
-        if(mvbBestInliers[i])
+        if(mvbBestInliers[i])///如果误差小于最大误差，那么这个点为内点
         {
             vIndices.push_back(i);
         }
@@ -555,6 +565,12 @@ void PnPsolver::compute_pcs(void)
   }
 }
 
+/***
+ * 使用EPnP计算位姿
+ * @param R 得到的旋转矩阵
+ * @param t 得到的平移矩阵
+ * @return
+ */
 double PnPsolver::compute_pose(double R[3][3], double t[3])
 {
   // 步骤1：获得EPnP算法中的四个控制点

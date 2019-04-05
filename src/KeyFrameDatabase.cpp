@@ -311,10 +311,10 @@ vector<KeyFrame*> KeyFrameDatabase::DetectRelocalizationCandidates(Frame *F)
     // 步骤4：计算候选帧组得分，得到最高组得分bestAccScore，并以此决定阈值minScoreToRetain
     // 单单计算当前帧和某一关键帧的相似性是不够的，这里将与关键帧相连（权值最高，共视程度最高）的前十个关键帧归为一组，计算累计得分
     // 具体而言：lScoreAndMatch中每一个KeyFrame都把与自己共视程度较高的帧归为一组，每一组会计算组得分并记录该组分数最高的KeyFrame，记录于lAccScoreAndMatch
-    for(list<pair<float,KeyFrame*> >::iterator it=lScoreAndMatch.begin(), itend=lScoreAndMatch.end(); it!=itend; it++)
+    for(list<pair<float,KeyFrame*> >::iterator it=lScoreAndMatch.begin(),itend=lScoreAndMatch.end(); it!=itend;it++ )
     {
         KeyFrame* pKFi = it->second;
-        vector<KeyFrame*> vpNeighs = pKFi->GetBestCovisibilityKeyFrames(10);
+        vector<KeyFrame*> vpNeighs = pKFi->GetBestCovisibilityKeyFrames(10);///前面在计算每一个关键帧的共视帧的 时候已经按照得分进行排序
 
         float bestScore = it->first; // 该组最高分数
         float accScore = bestScore;  // 该组累计得分
@@ -341,6 +341,7 @@ vector<KeyFrame*> KeyFrameDatabase::DetectRelocalizationCandidates(Frame *F)
     // Return all those keyframes with a score higher than 0.75*bestScore
     // 步骤5：得到组得分大于阈值的，组内得分最高的关键帧
     float minScoreToRetain = 0.75f*bestAccScore;
+    ///因为每个组内得分最高的关键帧可能是重复的，特别是相邻的关键帧，因此下面要使用set去除相同的关键帧，只返回彼此不同的候选帧
     set<KeyFrame*> spAlreadyAddedKF;
     vector<KeyFrame*> vpRelocCandidates;
     vpRelocCandidates.reserve(lAccScoreAndMatch.size());

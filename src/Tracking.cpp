@@ -549,6 +549,7 @@ void Tracking::Track()
 
             // Clean VO matches
             // 步骤2.4：清除UpdateLastFrame中为当前帧临时添加的MapPoints
+            ///添加MapPoints并没有添加到当前帧中，而是添加到了局部地图中
             for(int i=0; i<mCurrentFrame.N; i++)
             {
                 MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
@@ -1253,6 +1254,7 @@ bool Tracking::TrackLocalMap()
                 if(!mbOnlyTracking)
                 {
                     // 该MapPoint被其它关键帧观测到过
+                    ///只要是3D点，它的观测帧数应该都超过0
                     if(mCurrentFrame.mvpMapPoints[i]->Observations()>0)
                         mnMatchesInliers++;
                 }
@@ -1839,6 +1841,7 @@ bool Tracking::Relocalization()
             cv::Mat Tcw = pSolver->iterate(5,bNoMore,vbInliers,nInliers);
 
             // If Ransac reachs max. iterations discard keyframe
+            ///这里是否和迭代计算中最后的判断冲突
             if(bNoMore)
             {
                 vbDiscarded[i]=true;
