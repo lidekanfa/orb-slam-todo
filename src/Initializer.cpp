@@ -61,7 +61,7 @@ bool Initializer::Initialize(const Frame &CurrentFrame, const vector<int> &vMatc
     mvKeys2 = CurrentFrame.mvKeysUn;
 
     // mvMatches12记录匹配上的特征点对
-    mvMatches12.clear();///里面是匹配上的特征点的索引
+    mvMatches12.clear();///里面是匹配上的特征点对的索引
     mvMatches12.reserve(mvKeys2.size());
     // mvbMatched1记录每个特征点是否有匹配的特征点，
     // 这个变量后面没有用到，后面只关心匹配上的特征点
@@ -163,7 +163,10 @@ void Initializer::FindHomography(vector<bool> &vbMatchesInliers, float &score, c
     const int N = mvMatches12.size();
 
     // Normalize coordinates
-    // 将mvKeys1和mvKey2归一化到均值为0，一阶绝对矩为1，归一化矩阵分别为T1、T2
+    // 将mvKeys1和mvKeys2归一化到均值为0，一阶绝对矩为1，归一化矩阵分别为T1、T2
+    ///这里为什么要对特征点的坐标进行这些变换？
+    ///使得DLT变换对于相似变换不变
+    ///参看 《计算机视觉中的多视图几何》 p67
     vector<cv::Point2f> vPn1, vPn2;
     cv::Mat T1, T2;
     Normalize(mvKeys1,vPn1, T1);
@@ -198,6 +201,7 @@ void Initializer::FindHomography(vector<bool> &vbMatchesInliers, float &score, c
 
         cv::Mat Hn = ComputeH21(vPn1i,vPn2i);
         // 恢复原始的均值和尺度
+        ///什么
         H21i = T2inv*Hn*T1;
         H12i = H21i.inv();
 
@@ -371,7 +375,7 @@ cv::Mat Initializer::ComputeF21(const vector<cv::Point2f> &vP1,const vector<cv::
     cv::SVDecomp(A,w,u,vt,cv::SVD::MODIFY_A | cv::SVD::FULL_UV);
 
     cv::Mat Fpre = vt.row(8).reshape(0, 3); // v的最后一列
-
+    ///这点计算是否有问题？
     cv::SVDecomp(Fpre,w,u,vt,cv::SVD::MODIFY_A | cv::SVD::FULL_UV);
 
     w.at<float>(2)=0; // 秩2约束，将第3个奇异值设为0
@@ -1091,7 +1095,7 @@ int Initializer::CheckRT(const cv::Mat &R, const cv::Mat &t, const vector<cv::Ke
 
         // Check depth in front of first camera (only if enough parallax, as "infinite" points can easily go to negative depth)
         // 步骤5.1：3D点深度为负，在第一个摄像头后方，淘汰
-        if(p3dC1.at<float>(2)<=0 && cosParallax<0.99998)
+        if(p3dC1.at<float>(2)<=0 && cosParallax<0.99998)///两幅图像之间的夹角不要太小
             continue;
 
         // Check depth in front of second camera (only if enough parallax, as "infinite" points can easily go to negative depth)
@@ -1148,6 +1152,7 @@ int Initializer::CheckRT(const cv::Mat &R, const cv::Mat &t, const vector<cv::Ke
 
         // trick! 排序后并没有取最大的视差角
         // 取一个较大的视差角
+        ///min函数在哪里？
         size_t idx = min(50,int(vCosParallax.size()-1));
         parallax = acos(vCosParallax[idx])*180/CV_PI;
     }

@@ -11,9 +11,7 @@
   <component name="ChangeListManager">
     <list default="true" id="34dfce65-dc7c-4a65-af26-ed1ee3f6768f" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/KeyFrameDatabase.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/KeyFrameDatabase.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/PnPsolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/PnPsolver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Tracking.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Tracking.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Initializer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Initializer.cpp" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -22,44 +20,46 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/include/Initializer.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="219">
-              <caret line="50" column="8" lean-forward="true" selection-start-line="50" selection-start-column="8" selection-end-line="50" selection-end-column="8" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/Initializer.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="15225">
-              <caret line="1042" column="22" lean-forward="true" selection-start-line="1042" selection-start-column="22" selection-end-line="1042" selection-end-column="22" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <splitter split-orientation="horizontal" split-proportion="0.16700819">
+      <split-first>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/include/Initializer.h">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="167">
+                  <caret line="69" column="133" selection-start-line="69" selection-start-column="130" selection-end-line="69" selection-end-column="133" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/Initializer.cpp">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="15630">
+                  <caret line="1046" column="22" selection-start-line="1046" selection-start-column="22" selection-end-line="1046" selection-end-column="22" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-first>
+      <split-second>
+        <leaf>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/src/Initializer.cpp">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="197">
+                  <caret line="660" column="9" lean-forward="true" selection-start-line="660" selection-start-column="9" selection-end-line="660" selection-end-column="9" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-second>
+    </splitter>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>mvbBestInliers</find>
-      <find>mvbInliersi</find>
-      <find>bNoMore</find>
-      <find>mRansacMaxIts</find>
-      <find>nIterations</find>
-      <find>mnIterations</find>
-      <find>mnBestInliers</find>
-      <find>mRansacMinInliers</find>
-      <find>mvMaxError</find>
-      <find>SearchByProjection</find>
-      <find>Refine</find>
-      <find>Relocalization</find>
-      <find>SearchByBoW</find>
-      <find>PoseOptimization</find>
-      <find>UpdateLocalMapUpdateLocalKeyFrames</find>
       <find>UpdateLocalKeyFrames</find>
       <find>mCurrentFrame</find>
       <find>GetChilds</find>
@@ -75,6 +75,21 @@
       <find>UpdateLocalPoints</find>
       <find>TrackLocalMap</find>
       <find>mlpTemporalPoints</find>
+      <find>mk</find>
+      <find>threadH</find>
+      <find>Normalize</find>
+      <find>mSigma</find>
+      <find>ComputeF21</find>
+      <find>FindFundamental</find>
+      <find>ComputeH21</find>
+      <find>FindHomography</find>
+      <find>ReconstructH</find>
+      <find>Triangulate</find>
+      <find>CheckHomography</find>
+      <find>compute</find>
+      <find>DecomposeE</find>
+      <find>min</find>
+      <find>CheckRT</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -91,13 +106,13 @@
         <option value="$PROJECT_DIR$/src/Map.cpp" />
         <option value="$PROJECT_DIR$/include/MapPoint.h" />
         <option value="$PROJECT_DIR$/src/KeyFrame.cpp" />
-        <option value="$PROJECT_DIR$/src/Initializer.cpp" />
         <option value="$PROJECT_DIR$/src/Frame.cpp" />
         <option value="$PROJECT_DIR$/src/Optimizer.cpp" />
         <option value="$PROJECT_DIR$/src/KeyFrameDatabase.cpp" />
         <option value="$PROJECT_DIR$/src/PnPsolver.cpp" />
         <option value="$PROJECT_DIR$/src/ORBmatcher.cpp" />
         <option value="$PROJECT_DIR$/src/Tracking.cpp" />
+        <option value="$PROJECT_DIR$/src/Initializer.cpp" />
       </list>
     </option>
   </component>
@@ -138,7 +153,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../test2" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
   </component>
@@ -179,18 +194,20 @@
       <workItem from="1554205586136" duration="144000" />
       <workItem from="1554338900398" duration="6638000" />
       <workItem from="1554346391366" duration="2670000" />
-      <workItem from="1554423724298" duration="19308000" />
+      <workItem from="1554423724298" duration="19717000" />
+      <workItem from="1554460715232" duration="12000" />
+      <workItem from="1554511714342" duration="8810000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="117907000" />
+    <option name="totallyTimeSpent" value="127138000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1" y="-11" width="1026" height="780" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.22336066" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.23360656" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -325,13 +342,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/include/Frame.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-606">
-          <caret line="167" column="39" selection-start-line="167" selection-start-column="27" selection-end-line="167" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/Tracking.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-6590">
@@ -437,17 +447,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/Initializer.cpp">
+    <entry file="file://$PROJECT_DIR$/include/Frame.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15225">
-          <caret line="1042" column="22" lean-forward="true" selection-start-line="1042" selection-start-column="22" selection-end-line="1042" selection-end-column="22" />
+        <state relative-caret-position="167">
+          <caret line="118" column="14" selection-start-line="118" selection-start-column="12" selection-end-line="118" selection-end-column="14" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/include/Initializer.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="219">
-          <caret line="50" column="8" lean-forward="true" selection-start-line="50" selection-start-column="8" selection-end-line="50" selection-end-column="8" />
+        <state relative-caret-position="167">
+          <caret line="69" column="133" selection-start-line="69" selection-start-column="130" selection-end-line="69" selection-end-column="133" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Initializer.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="197">
+          <caret line="660" column="9" lean-forward="true" selection-start-line="660" selection-start-column="9" selection-end-line="660" selection-end-column="9" />
         </state>
       </provider>
     </entry>
