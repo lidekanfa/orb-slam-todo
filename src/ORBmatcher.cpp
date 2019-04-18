@@ -206,7 +206,7 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPoin
 {
     const vector<MapPoint*> vpMapPointsKF = pKF->GetMapPointMatches();
 
-    vpMapPointMatches = vector<MapPoint*>(F.N,static_cast<MapPoint*>(NULL));///这个F应该是keyframe吧，frame中没有N这个成员变量
+    vpMapPointMatches = vector<MapPoint*>(F.N,static_cast<MapPoint*>(NULL));
 
     const DBoW2::FeatureVector &vFeatVecKF = pKF->mFeatVec;///什么鬼
 
@@ -1101,6 +1101,7 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const
                     else
                         pMPinKF->Replace(pMP);
                 }
+                ///如果是bad不是也应该替换掉吗？
             }
             else// 如果这个点没有对应的MapPoint
             {

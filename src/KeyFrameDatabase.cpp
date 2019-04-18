@@ -111,6 +111,7 @@ vector<KeyFrame*> KeyFrameDatabase::DetectLoopCandidates(KeyFrame* pKF, float mi
         for(DBoW2::BowVector::const_iterator vit=pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit != vend; vit++)
         {
             // 提取所有包含该word的KeyFrame
+            ///这里针对的是所有的关键帧
             list<KeyFrame*> &lKFs =   mvInvertedFile[vit->first];
 
             for(list<KeyFrame*>::iterator lit=lKFs.begin(), lend= lKFs.end(); lit!=lend; lit++)
@@ -150,6 +151,7 @@ vector<KeyFrame*> KeyFrameDatabase::DetectLoopCandidates(KeyFrame* pKF, float mi
 
     // Compute similarity score. Retain the matches whose score is higher than minScore
     // 步骤3：遍历所有闭环候选帧，挑选出共有单词数大于minCommonWords且单词匹配度大于minScore存入lScoreAndMatch
+    ///这里的minScore指的是与当前关键帧相连关键帧的相似度最小值
     for(list<KeyFrame*>::iterator lit=lKFsSharingWords.begin(), lend= lKFsSharingWords.end(); lit!=lend; lit++)
     {
         KeyFrame* pKFi = *lit;
@@ -158,7 +160,6 @@ vector<KeyFrame*> KeyFrameDatabase::DetectLoopCandidates(KeyFrame* pKF, float mi
         if(pKFi->mnLoopWords>minCommonWords)
         {
             nscores++;// 这个变量后面没有用到
-
             float si = mpVoc->score(pKF->mBowVec,pKFi->mBowVec);
 
             pKFi->mLoopScore = si;
@@ -172,13 +173,14 @@ vector<KeyFrame*> KeyFrameDatabase::DetectLoopCandidates(KeyFrame* pKF, float mi
 
     list<pair<float,KeyFrame*> > lAccScoreAndMatch;
     float bestAccScore = minScore;
-
+    ///todo 这一块有好多的重复计算，是否可以优化
     // Lets now accumulate score by covisibility
     // 单单计算当前帧和某一关键帧的相似性是不够的，这里将与关键帧相连（权值最高，共视程度最高）的前十个关键帧归为一组，计算累计得分
     // 步骤4：具体而言：lScoreAndMatch中每一个KeyFrame都把与自己共视程度较高的帧归为一组，每一组会计算组得分并记录该组分数最高的KeyFrame，记录于lAccScoreAndMatch
-    for(list<pair<float,KeyFrame*> >::iterator it=lScoreAndMatch.begin(), itend=lScoreAndMatch.end(); it!=itend; it++ )
+    for(list<pair<float,KeyFrame*>>::iterator it=lScoreAndMatch.begin(),itend=lScoreAndMatch.end();it!=itend;it++)
     {
         KeyFrame* pKFi = it->second;
+        ///这里是与当前候选帧相连的相似度最高的前10个关键帧
         vector<KeyFrame*> vpNeighs = pKFi->GetBestCovisibilityKeyFrames(10);
 
         float bestScore = it->first; // 该组最高分数
@@ -187,6 +189,7 @@ vector<KeyFrame*> KeyFrameDatabase::DetectLoopCandidates(KeyFrame* pKF, float mi
         for(vector<KeyFrame*>::iterator vit=vpNeighs.begin(), vend=vpNeighs.end(); vit!=vend; vit++)
         {
             KeyFrame* pKF2 = *vit;
+            ///这些与当前候选帧相连的关键帧只有在和当前关键帧有共视并且共视单词数大于最小值的时候才能将得分累积
             if(pKF2->mnLoopQuery==pKF->mnId && pKF2->mnLoopWords>minCommonWords)
             {
                 accScore+=pKF2->mLoopScore;// 因为pKF2->mnLoopQuery==pKF->mnId，所以只有pKF2也在闭环候选帧中，才能贡献分数

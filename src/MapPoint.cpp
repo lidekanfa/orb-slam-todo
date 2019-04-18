@@ -241,12 +241,15 @@ void MapPoint::Replace(MapPoint* pMP)
         }
         else
         {   ///这里也没有体现pmp的观测比this多
+            ///并且这里只是把原来的三维点删除了，并没有替换成回环里面的三维点
+            ///要保留后面回环检测的特征点的话，应该在后面添加ReplaceMapPointMatch和AddObservation
+            ///这里也和回环对应的两帧有关系，前面已经将回环检测的3d点替换了，因此，要保证两帧有共同的3D点必须添加
             // 产生冲突，即pKF中有两个特征点a,b（这两个特征点的描述子是近似相同的），这两个特征点对应两个MapPoint为this,pMP
             // 然而在fuse的过程中pMP的观测更多，需要替换this，因此保留b与pMP的联系，去掉a与this的联系
             pKF->EraseMapPointMatch(mit->second);
         }
     }
-    pMP->IncreaseFound(nfound);///这个如果是+1的话有什么意义你呢
+    pMP->IncreaseFound(nfound);
     pMP->IncreaseVisible(nvisible);
     pMP->ComputeDistinctiveDescriptors();
 
@@ -288,7 +291,7 @@ void MapPoint::IncreaseFound(int n)
     mnFound+=n;
 }
 
-float MapPoint::GetFoundRatio()///这些参数是干啥的？
+float MapPoint::GetFoundRatio()///这些参数是干啥的？  实际匹配到的地图点/应该匹配到的地图点
 {
     unique_lock<mutex> lock(mMutexFeatures);
     return static_cast<float>(mnFound)/mnVisible;
@@ -480,7 +483,9 @@ float MapPoint::GetMaxDistanceInvariance()
 //           log(dmax/d)
 // m = ceil(------------)
 //            log(1.2)
-int MapPoint::PredictScale(const float &currentDist, KeyFrame* pKF)///为什么可以这样计算
+
+
+int MapPoint::PredictScale(const float &currentDist, KeyFrame* pKF)
 {
     float ratio;
     {

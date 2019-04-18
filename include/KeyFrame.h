@@ -166,6 +166,7 @@ public:
     long unsigned int mnBAGlobalForKF;
 
     // Calibration parameters
+    ///这里的mbf是什么？
     const float fx, fy, cx, cy, invfx, invfy, mbf, mb, mThDepth;
 
     // Number of KeyPoints

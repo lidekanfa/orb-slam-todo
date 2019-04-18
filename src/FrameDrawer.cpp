@@ -107,7 +107,7 @@ cv::Mat FrameDrawer::DrawFrame()
         {
             if(vbVO[i] || vbMap[i])
             {
-                //在特征点附近正方形选择四个点
+                //在特征点附近计算对角线上的两个点
                 cv::Point2f pt1,pt2;
                 pt1.x=vCurrentKeys[i].pt.x-r;
                 pt1.y=vCurrentKeys[i].pt.y-r;

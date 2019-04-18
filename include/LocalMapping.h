@@ -109,6 +109,7 @@ protected:
 
     KeyFrame* mpCurrentKeyFrame;
 
+    ///新生成的地图点放到这里面然后会检查 它的有效性，这也从侧面解决了正式地图点共视帧数量较少的条件下剔除的情况
     std::list<MapPoint*> mlpRecentAddedMapPoints;
 
     std::mutex mMutexNewKFs;

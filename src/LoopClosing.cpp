@@ -158,6 +158,7 @@ bool LoopClosing::DetectLoop()
     if(vpCandidateKFs.empty())
     {
         mpKeyFrameDB->add(mpCurrentKF);
+        ///这个参数在哪里出现过？
         mvConsistentGroups.clear();
         mpCurrentKF->SetErase();
         return false;
@@ -176,6 +177,7 @@ bool LoopClosing::DetectLoop()
     // ConsistentGroup数据类型为pair<set<KeyFrame*>,int>
     // ConsistentGroup.first对应每个“连续组”中的关键帧，ConsistentGroup.second为每个“连续组”的序号
     vector<ConsistentGroup> vCurrentConsistentGroups;
+    ///这里的连接指的是什么？是有共视点，还是说在时间上相邻并且有共视点？如果只是有共视点，那它不一定是在时间上相连的，这样的话如何判断是回环，也可能是重定位造成的结果
     vector<bool> vbConsistentGroup(mvConsistentGroups.size(),false);
     for(size_t i=0, iend=vpCandidateKFs.size(); i<iend; i++)
     {
@@ -188,6 +190,7 @@ bool LoopClosing::DetectLoop()
         bool bEnoughConsistent = false;
         bool bConsistentForSomeGroup = false;
         // 遍历之前的“子连续组”
+        ///初始化向量的时候大小是0.前面没有见到有改变mvConsistentGroups大小的函数，也没有赋值的地方，后面的使用是从哪里来的？
         for(size_t iG=0, iendG=mvConsistentGroups.size(); iG<iendG; iG++)
         {
             // 取出一个之前的子连续组
@@ -206,7 +209,7 @@ bool LoopClosing::DetectLoop()
                 }
             }
 
-            if(bConsistent)
+            if(bConsistent)///这里的判断不是必要的，前面如果找到的话会直接跳出，没有找到才会走下来，而标志位置位和跳出是一起的
             {
                 int nPreviousConsistency = mvConsistentGroups[iG].second;
                 int nCurrentConsistency = nPreviousConsistency + 1;
@@ -224,6 +227,7 @@ bool LoopClosing::DetectLoop()
                 }
 
                 //这里是不是缺一个break来提高效率呢？(wubo???)
+
             }
         }
 
@@ -372,6 +376,7 @@ bool LoopClosing::ComputeSim3()
                 {
                     // 保存inlier的MapPoint
                     if(vbInliers[j])
+                        ///这里vvpMapPointMatches一定是内点吗？这里面的索引应该变了
                        vpMapPointMatches[j]=vvpMapPointMatches[i][j];
                 }
 
@@ -625,6 +630,7 @@ void LoopClosing::CorrectLoop()
 
             // Make sure connections are updated
             // 步骤2.4：根据共视关系更新当前帧与其它关键帧之间的连接
+            ///这一步有用吗？虽然地图点的位置发生了变化，但是它的内部结构并没有变，有着共视关系的关键帧并没有发生变化，因此这一句好像没有作用吧
             pKFi->UpdateConnections();
         }
 

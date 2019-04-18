@@ -68,7 +68,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
     mpVocabulary = new ORBVocabulary();
     bool bVocLoad = false; // chose loading method based on file extension
-    if (has_suffix(strVocFile, ".txt"))
+    if (has_suffix(strVocFile, ".txt"))///判断文件类型
 	  bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
 	else if(has_suffix(strVocFile, ".bin"))
 	  bVocLoad = mpVocabulary->loadFromBinaryFile(strVocFile);
@@ -113,6 +113,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     mpTracker->SetViewer(mpViewer);
 
     //Set pointers between threads
+
     mpTracker->SetLocalMapper(mpLocalMapper);
     mpTracker->SetLoopClosing(mpLoopCloser);
 
@@ -232,6 +233,7 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
             mpLocalMapper->RequestStop();
 
             // Wait until Local Mapping has effectively stopped
+            ///那这样是不是线程在睡眠时间内变量更新、互斥锁无效
             while(!mpLocalMapper->isStopped())
             {
                 //usleep(1000);

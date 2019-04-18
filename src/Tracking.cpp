@@ -382,7 +382,6 @@ void Tracking::Track()
                 // 应该只要mVelocity不为空，就优先选择TrackWithMotionModel
                 // mnLastRelocFrameId上一次重定位的那一帧
                 ///刚刚完成重定位的时候位姿变换是不能拿来给当前关键帧计算位姿作参考的
-                ///是不是俺
                 if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
                 {
                     // 将上一帧的位姿作为当前帧的初始位姿

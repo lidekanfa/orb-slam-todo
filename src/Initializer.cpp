@@ -1152,7 +1152,7 @@ int Initializer::CheckRT(const cv::Mat &R, const cv::Mat &t, const vector<cv::Ke
 
         // trick! 排序后并没有取最大的视差角
         // 取一个较大的视差角
-        ///min函数在哪里？
+
         size_t idx = min(50,int(vCosParallax.size()-1));
         parallax = acos(vCosParallax[idx])*180/CV_PI;
     }

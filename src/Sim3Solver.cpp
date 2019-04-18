@@ -136,6 +136,8 @@ void Sim3Solver::SetRansacParameters(double probability, int minInliers, int max
     if(mRansacMinInliers==N)
         nIterations=1;
     else
+        ///计算迭代次数，在N次迭代中至少有一次没有外点的概率已知，内点概率已知，解决问题的最小集合已知
+        ///这里假设内点概率为 mRansacMinInliers/N
         nIterations = ceil(log(1-mRansacProb)/log(1-pow(epsilon,3)));
 
     mRansacMaxIts = max(1,min(nIterations,mRansacMaxIts));

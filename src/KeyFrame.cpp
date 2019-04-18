@@ -698,6 +698,13 @@ void KeyFrame::EraseConnection(KeyFrame* pKF)
 }
 
 // r为边长（半径）
+/**
+ * 在在一定范围内的特征点中寻找与（x，y）坐标相距在距离范围内的点
+ * @param x
+ * @param y
+ * @param r
+ * @return 否合要求的点在关键点向量中的索引
+ */
 vector<size_t> KeyFrame::GetFeaturesInArea(const float &x, const float &y, const float &r) const
 {
     vector<size_t> vIndices;

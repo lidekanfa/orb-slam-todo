@@ -121,7 +121,7 @@ static float IC_Angle(const Mat& image, Point2f pt,  const vector<int> & u_max) 
 const float factorPI = (float)(CV_PI/180.f);       //变换因子
 
 /*******************************
- * 计算orb描述子
+ * 每层计算关键点描述子
  * 参数1 kpt 关键点坐标
  * 参数2 img 输入图像
  * 参数3 pattern 要比较的点位置的指针
@@ -841,7 +841,7 @@ void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoin
 
         const int nCols = width/W;
         const int nRows = height/W;
-        const int wCell = ceil(width/nCols);  //这一点实干啥，不清楚，结果应该是W，没意义啊？
+        const int wCell = ceil(width/nCols);  //这一点是干啥，不清楚，结果应该是W，没意义啊？
         const int hCell = ceil(height/nRows);
 
         for(int i=0; i<nRows; i++)  //检测每个小格子里面的特征点
@@ -915,7 +915,6 @@ void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoin
  * 计算每层的关键点
  *
  * ****************/
- //todo 感觉FAST关键点的计算也应该和patch有关吧
 void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<KeyPoint> > &allKeypoints)
 {
     allKeypoints.resize(nlevels);
@@ -927,6 +926,7 @@ void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<KeyPoint> > &allK
         const int nDesiredFeatures = mnFeaturesPerLevel[level]; //每层的关键点个数
         //将长宽分成几份
         const int levelCols = sqrt((float)nDesiredFeatures/(5*imageRatio)); //todo 为什么要这样算
+        ///应该是这样，但是这样计算后表示的不是这个东西
         const int levelRows = imageRatio*levelCols;
 
         const int minBorderX = EDGE_THRESHOLD;

@@ -101,6 +101,8 @@ void LocalMapping::Run()
                 // Tracking中先把关键帧交给LocalMapping线程
                 // 并且在Tracking中InsertKeyFrame函数的条件比较松，交给LocalMapping线程的关键帧会比较密
                 // 在这里再删除冗余的关键帧
+                ///是不是在SearchInNeighbors CreateNewMapPoints之前进行会更好，毕竟自己添了很多有共视关系的特征点
+                /// 这里进行关键帧剔除只是针对和当前关键帧有共视关系的其它关键帧
                 KeyFrameCulling();
             }
 
@@ -198,10 +200,13 @@ void LocalMapping::ProcessNewKeyFrame()
             {
                 // 非当前帧生成的MapPoints
 				// 为当前帧在tracking过程跟踪到的MapPoints更新属性
+				///这一点如何判断的？前面mpCurrentKeyFrame->GetMapPointMatches得到的三维点和当前关键帧的关系是什么？
+				///如果没有共同观测怎么能匹配？
                 if(!pMP->IsInKeyFrame(mpCurrentKeyFrame))
                 {
                     // 添加观测
                     pMP->AddObservation(mpCurrentKeyFrame, i);
+                    ///每添加一个关键帧所有的3D点都要进行更新的话，那么更新的频率是否过高？
                     // 获得该点的平均观测方向和观测距离范围
                     pMP->UpdateNormalAndDepth();
                     // 加入关键帧后，更新3d点的最佳描述子
@@ -231,6 +236,7 @@ void LocalMapping::ProcessNewKeyFrame()
 /**
  * @brief 剔除ProcessNewKeyFrame和CreateNewMapPoints函数中引入的质量不好的MapPoints
  * @see VI-B recent map points culling
+ * 这里主要是检测地图点的可观测性
  */
 void LocalMapping::MapPointCulling()
 {
@@ -258,6 +264,7 @@ void LocalMapping::MapPointCulling()
         {
             // 步骤2：将不满足VI-B条件的MapPoint剔除
             // VI-B 条件1：
+            ///通过重投影，一些地图点理论上在一些关键帧中是应该被看到的，但是可能由于特征点以及描述子的关系，实际在匹配的过程中并没有被观测到
             // 跟踪到该MapPoint的Frame数相比预计可观测到该MapPoint的Frame数的比例需大于25%
             // IncreaseFound / IncreaseVisible < 25%，注意不一定是关键帧。
             pMP->SetBadFlag();
@@ -265,6 +272,7 @@ void LocalMapping::MapPointCulling()
         }
         else if(((int)nCurrentKFid-(int)pMP->mnFirstKFid)>=2 && pMP->Observations()<=cnThObs)
         {
+            ///保证地图点的一致性，必须得是连续观测
             // 步骤3：将不满足VI-B条件的MapPoint剔除
             // VI-B 条件2：从该点建立开始，到现在已经过了不小于2个关键帧
             // 但是观测到该点的关键帧数却不超过cnThObs帧，那么该点检验不合格
@@ -272,6 +280,7 @@ void LocalMapping::MapPointCulling()
             lit = mlpRecentAddedMapPoints.erase(lit);
         }
         else if(((int)nCurrentKFid-(int)pMP->mnFirstKFid)>=3)
+            ///得经过实战检验才要
             // 步骤4：从建立该点开始，已经过了3个关键帧而没有被剔除，则认为是质量高的点
             // 因此没有SetBadFlag()，仅从队列中删除，放弃继续对该MapPoint的检测
             lit = mlpRecentAddedMapPoints.erase(lit);
@@ -311,7 +320,7 @@ void LocalMapping::CreateNewMapPoints()
     const float &invfx1 = mpCurrentKeyFrame->invfx;
     const float &invfy1 = mpCurrentKeyFrame->invfy;
 
-    const float ratioFactor = 1.5f*mpCurrentKeyFrame->mfScaleFactor;
+    const float ratioFactor = 1.5f*mpCurrentKeyFrame->mfScaleFactor;///
 
     int nnew=0;
 
@@ -346,6 +355,8 @@ void LocalMapping::CreateNewMapPoints()
             // baseline与景深的比例
             const float ratioBaselineDepth = baseline/medianDepthKF2;
             // 如果特别远(比例特别小)，那么不考虑当前邻接的关键帧，不生成3D点
+            ///是不是相当于双目相机的最大测距距离，在焦距一定的情况下最大测距距离和基线有关，基线越长，最大测距距离越长
+            ///相当于比例比较大，超过这个距离后，测量不准
             if(ratioBaselineDepth<0.01)
                 continue;
         }
@@ -357,6 +368,7 @@ void LocalMapping::CreateNewMapPoints()
         // Search matches that fullfil epipolar constraint
         // 步骤5：通过极线约束限制匹配时的搜索范围，进行特征点匹配
         vector<pair<size_t,size_t> > vMatchedIndices;
+        ///找匹配点
         matcher.SearchForTriangulation(mpCurrentKeyFrame,pKF2,F12,vMatchedIndices,false);
 
         cv::Mat Rcw2 = pKF2->GetRotation();
@@ -374,7 +386,7 @@ void LocalMapping::CreateNewMapPoints()
         const float &invfy2 = pKF2->invfy;
 
         // Triangulate each match
-        // 步骤6：对每对匹配通过三角化生成3D点,he Triangulate函数差不多
+        // 步骤6：对每对匹配通过三角化生成3D点,和 Triangulate函数差不多
         const int nmatches = vMatchedIndices.size();
         for(int ikp=0; ikp<nmatches; ikp++)
         {
@@ -550,6 +562,7 @@ void LocalMapping::CreateNewMapPoints()
             /*if(fabs(ratioDist-ratioOctave)>ratioFactor)
                 continue;*/
             // ratioDist*ratioFactor < ratioOctave 或 ratioDist/ratioOctave > ratioFactor表明尺度变化是连续的
+            //todo 这一句是什么意思？
             if(ratioDist*ratioFactor<ratioOctave || ratioDist>ratioOctave*ratioFactor)
                 continue;
 
@@ -561,6 +574,7 @@ void LocalMapping::CreateNewMapPoints()
             // a.观测到该MapPoint的关键帧
             // b.该MapPoint的描述子
             // c.该MapPoint的平均观测方向和深度范围
+            ///或者先不更新这些，等到检验合格后再更新
             pMP->AddObservation(mpCurrentKeyFrame,idx1);            
             pMP->AddObservation(pKF2,idx2);
 
@@ -575,6 +589,7 @@ void LocalMapping::CreateNewMapPoints()
 
             // 步骤6.8：将新产生的点放入检测队列
             // 这些MapPoints都会经过MapPointCulling函数的检验
+
             mlpRecentAddedMapPoints.push_back(pMP);
 
             nnew++;
@@ -855,6 +870,8 @@ void LocalMapping::KeyFrameCulling()
 
                             // Scale Condition 
                             // 尺度约束，要求MapPoint在该局部关键帧的特征尺度大于（或近似于）其它关键帧的特征尺度
+                            /// 尺度约束的作用？
+                            ///论文中说这样的话地图点会更加精确
                             if(scaleLeveli<=scaleLevel+1)
                             {
                                 nObs++;
